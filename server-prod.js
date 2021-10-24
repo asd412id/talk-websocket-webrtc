@@ -30,13 +30,10 @@ io.on('connection', (socket) => {
         users.splice(i, 1);
       }
     });
-    socket.broadcast.emit('users', users);
   });
 
   socket.on('regdata', data => {
     users.push(data);
-    socket.broadcast.emit('users', users);
-    socket.emit('users', users);
   });
 
   socket.on('call', id => {
