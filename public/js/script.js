@@ -134,11 +134,14 @@ const startApp = () => {
     $("#status").html(`<div class="p-1 bg-danger text-center">OFFLINE</div>`);
     $("#all").prop('disabled', true);
   });
-  socket.on('yourID', ID => {
+  socket.on('yourID', async (ID) => {
     $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span></div>`);
-    peer = new Peer(ID);
+    peer = await new Peer(ID, {
+      host: window.location.hostname,
+      port: window.location.port
+    });
     peer.on('call', call => {
-      call.answer(null);
+      call.answer();
       call.on('stream', remoteStream => {
         const audio = new Audio();
         audio.autoplay = true;

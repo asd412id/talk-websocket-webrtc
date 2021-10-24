@@ -21,6 +21,13 @@ const io = socketIo(server);
 var users = [];
 var caller = [];
 
+peerServer.on('connection', client => {
+  console.log('Connected:' + client.id);
+});
+peerServer.on('disconnect', client => {
+  console.log('Disconnected: ' + client.id);
+});
+
 io.on('connection', (socket) => {
   socket.emit('yourID', socket.id);
 
