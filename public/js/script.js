@@ -18,7 +18,7 @@ var peer = null;
 var streamDest = [];
 var calls = [];
 const modal = `
-<div class="modal fade" role="dialog" data-backdrop="static" aria-hidden="true" id="modal-login">
+<div class="modal fade modal-dialog-centered" role="dialog" data-backdrop="static" aria-hidden="true" id="modal-login">
   <div class="modal-dialog modal-sm" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -37,7 +37,6 @@ const modal = `
     </div>
   </div>
 </div>`;
-$("body").append(modal);
 
 function getMedia() {
   return navigator.mediaDevices.getUserMedia({
@@ -173,6 +172,7 @@ const startApp = () => {
 }
 
 if (yourName == '' || yourName == undefined || yourName == null) {
+  $("body").append(modal);
   $("#modal-login").modal("show");
   $("#form-name").off().submit(async function (e) {
     e.preventDefault();
