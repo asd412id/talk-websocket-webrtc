@@ -138,7 +138,8 @@ const startApp = () => {
     $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span></div>`);
     peer = await new Peer(ID, {
       host: window.location.hostname,
-      port: window.location.port
+      port: window.location.port,
+      configs: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }], 'sdpSemantics': 'unified-plan' }
     });
     peer.on('call', call => {
       call.answer();
