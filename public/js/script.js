@@ -18,8 +18,8 @@ var peer = null;
 var streamDest = [];
 var calls = [];
 const modal = `
-<div class="modal fade modal-dialog-centered" role="dialog" data-backdrop="static" aria-hidden="true" id="modal-login">
-  <div class="modal-dialog modal-sm" role="document">
+<div class="modal fade" role="dialog" data-backdrop="static" aria-hidden="true" id="modal-login">
+  <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title text-center">Masukkan Nama Anda</h5>
