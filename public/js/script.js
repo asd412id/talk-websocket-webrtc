@@ -78,7 +78,6 @@ async function sendStream() {
 }
 
 function allCall(btn) {
-  streamDest = [];
   const _btn = $(btn);
   const status = _btn.data('active');
   _btn.data('active', !status);
@@ -126,15 +125,14 @@ $("#status").html(`<div class="p-1 bg-danger text-center">OFFLINE</div>`);
 const startApp = () => {
   socket.on('connect', () => {
     $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE</div>`);
-    $("#all").prop('disabled', false);
   });
   socket.on('disconnect', () => {
+	peer = null;
     $("#users").empty();
     $("#status").html(`<div class="p-1 bg-danger text-center">OFFLINE</div>`);
     $("#all").prop('disabled', true);
   });
   socket.on('yourID', async (ID) => {
-    $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span></div>`);
     peer = await new Peer(ID, {
       host: window.location.hostname,
       port: window.location.port,
@@ -153,6 +151,8 @@ const startApp = () => {
     yourID = ID;
   });
   socket.on('users', users => {
+	$("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span></div>`);
+	$("#all").prop('disabled', false);
     listUser = users;
     listUser.forEach((v, i) => {
       if (v.id == yourID) {
