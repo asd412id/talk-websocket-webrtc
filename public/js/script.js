@@ -142,6 +142,7 @@ const startApp = () => {
       configs: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], sdpSemantics: 'unified-plan' }
     });
     peer.on('call', call => {
+      console.log('calling', call);
       call.answer();
       call.on('stream', remoteStream => {
         const audio = new Audio();
