@@ -14,7 +14,7 @@ var server = http.createServer(app);
 const peerServer = ExpressPeerServer(server, options);
 
 app.use(express.static(path.join(__dirname, 'public')), peerServer);
-server.listen(9000);
+server.listen();
 
 const io = socketIo(server);
 
