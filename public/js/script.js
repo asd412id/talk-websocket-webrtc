@@ -139,7 +139,7 @@ const startApp = () => {
     peer = await new Peer(ID, {
       host: window.location.hostname,
       port: window.location.port,
-      configs: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }], 'sdpSemantics': 'unified-plan' }
+      configs: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], sdpSemantics: 'unified-plan' }
     });
     peer.on('call', call => {
       call.answer();
