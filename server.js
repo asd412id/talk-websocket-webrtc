@@ -28,13 +28,6 @@ const io = socketIo(server);
 var users = [];
 var caller = [];
 
-peerServer.on('connection', client => {
-  console.log('Connected:' + client.id);
-});
-peerServer.on('disconnect', client => {
-  console.log('Disconnected: ' + client.id);
-});
-
 io.on('connection', (socket) => {
   socket.emit('yourID', socket.id);
 
@@ -44,13 +37,10 @@ io.on('connection', (socket) => {
         users.splice(i, 1);
       }
     });
-    socket.broadcast.emit('users', users);
   });
 
   socket.on('regdata', data => {
     users.push(data);
-    socket.broadcast.emit('users', users);
-    socket.emit('users', users);
   });
 
   socket.on('call', id => {
@@ -64,5 +54,15 @@ io.on('connection', (socket) => {
       }
     });
     socket.broadcast.emit('caller', caller);
+  });
+  
+  peerServer.on('connection', client => {
+    console.log('Connected:' + client.id);
+	socket.broadcast.emit('users', users);
+    socket.emit('users', users);
+  });
+  peerServer.on('disconnect', client => {
+	socket.broadcast.emit('users', users);
+    console.log('Disconnected: ' + client.id);
   });
 });
