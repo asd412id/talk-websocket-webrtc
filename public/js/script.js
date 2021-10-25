@@ -127,7 +127,7 @@ const startApp = () => {
     $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE</div>`);
   });
   socket.on('disconnect', () => {
-	peer = null;
+    peer = null;
     $("#users").empty();
     $("#status").html(`<div class="p-1 bg-danger text-center">OFFLINE</div>`);
     $("#all").prop('disabled', true);
@@ -135,24 +135,24 @@ const startApp = () => {
   socket.on('yourID', async (ID) => {
     peer = await new Peer(ID, {
       host: window.location.hostname,
-      port: window.location.port,
-      configs: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], sdpSemantics: 'unified-plan' }
+      port: window.location.port
     });
     peer.on('call', call => {
       console.log('calling', call);
       call.answer();
-      call.on('stream', remoteStream => {
-        const audio = new Audio();
-        audio.autoplay = true;
+      call.on('stream', async (remoteStream) => {
+        console.log(remoteStream);
+        const audio = await new Audio();
         audio.srcObject = remoteStream;
+        await audio.play();
       });
     });
     socket.emit('regdata', { id: ID, name: yourName });
     yourID = ID;
   });
   socket.on('users', users => {
-	$("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span></div>`);
-	$("#all").prop('disabled', false);
+    $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span></div>`);
+    $("#all").prop('disabled', false);
     listUser = users;
     listUser.forEach((v, i) => {
       if (v.id == yourID) {
