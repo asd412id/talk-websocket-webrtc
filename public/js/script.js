@@ -133,10 +133,7 @@ const startApp = () => {
     $("#all").prop('disabled', true);
   });
   socket.on('yourID', async (ID) => {
-    peer = await new Peer(ID, {
-      host: window.location.hostname,
-      port: window.location.port
-    });
+    peer = await new Peer(ID);
     peer.on('call', call => {
       console.log('calling', call);
       call.answer();
