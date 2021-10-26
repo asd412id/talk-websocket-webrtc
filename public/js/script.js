@@ -89,7 +89,7 @@ function allCall(btn) {
     const _user = $(this)
     if (!status == true) {
       streamDest.push(_user.data('id'));
-      _user.addClass('btn-danger');
+      _user.prop('disabled', true);
       socket.emit('call', { from: yourID, to: _user.data('id') });
     } else {
       streamDest.splice(streamDest.indexOf(_user.data('id')), 1);
@@ -108,7 +108,7 @@ function btnClick(btn) {
   _btn.data('active', !status);
   if (!status == true) {
     streamDest.push(_btn.data('id'));
-    _btn.addClass('btn-danger');
+    _btn.prop('disabled', true);
     socket.emit('call', { from: yourID, to: _btn.data('id') });
   } else {
     streamDest.splice(streamDest.indexOf(_btn.data('id')), 1);
@@ -131,6 +131,7 @@ const startApp = () => {
     $("#users").empty();
     $("#status").html(`<div class="p-1 bg-danger text-center">OFFLINE</div>`);
     $("#all").prop('disabled', true);
+    $(".user").removeClass('btn-warning');
   });
   socket.on('yourID', async (srv) => {
     peer = await new Peer(srv.uid, {
@@ -140,10 +141,11 @@ const startApp = () => {
     });
     peer.on('call', call => {
       call.answer();
-      call.on('stream', async (remoteStream) => {
-        const audio = await new Audio();
+      call.on('stream', (remoteStream) => {
+        socket.emit('answered', { from: call.peer, to: yourID });
+        const audio = new Audio();
         audio.srcObject = remoteStream;
-        await audio.play();
+        audio.autoplay = true;
       });
     });
     socket.emit('regdata', { id: srv.uid, name: yourName });
@@ -151,7 +153,9 @@ const startApp = () => {
   });
   socket.on('users', users => {
     $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span></div>`);
-    $("#all").prop('disabled', false);
+    if (users.length > 1) {
+      $("#all").prop('disabled', false);
+    }
     listUser = users;
     listUser.forEach((v, i) => {
       if (v.id == yourID) {
@@ -167,6 +171,12 @@ const startApp = () => {
         $("#" + id.from).addClass('btn-warning');
       }
     });
+  });
+  socket.on('answered', data => {
+    if (data.from == yourID) {
+      $("#" + data.to).prop('disabled', false);
+      $("#" + data.to).addClass('btn-danger');
+    }
   });
 }
 

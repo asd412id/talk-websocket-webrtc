@@ -47,6 +47,9 @@ io.on('connection', (socket) => {
     caller.push(id)
     socket.broadcast.emit('caller', caller);
   });
+  socket.on('answered', data => {
+    socket.broadcast.emit('answered', data);
+  });
   socket.on('end', id => {
     caller.forEach((v, i) => {
       if (v.from == id.from) {
@@ -55,14 +58,14 @@ io.on('connection', (socket) => {
     });
     socket.broadcast.emit('caller', caller);
   });
-  
+
   peerServer.on('connection', client => {
     console.log('Connected:' + client.id);
-	socket.broadcast.emit('users', users);
+    socket.broadcast.emit('users', users);
     socket.emit('users', users);
   });
   peerServer.on('disconnect', client => {
-	socket.broadcast.emit('users', users);
+    socket.broadcast.emit('users', users);
     console.log('Disconnected: ' + client.id);
   });
 });
