@@ -132,20 +132,22 @@ const startApp = () => {
     $("#status").html(`<div class="p-1 bg-danger text-center">OFFLINE</div>`);
     $("#all").prop('disabled', true);
   });
-  socket.on('yourID', async (ID) => {
-    peer = await new Peer(ID);
+  socket.on('yourID', async (srv) => {
+    peer = await new Peer(srv.uid, {
+      host: window.location.hostname,
+      port: window.location.port,
+      config: srv.config
+    });
     peer.on('call', call => {
-      console.log('calling', call);
       call.answer();
       call.on('stream', async (remoteStream) => {
-        console.log(remoteStream);
         const audio = await new Audio();
         audio.srcObject = remoteStream;
         await audio.play();
       });
     });
-    socket.emit('regdata', { id: ID, name: yourName });
-    yourID = ID;
+    socket.emit('regdata', { id: srv.uid, name: yourName });
+    yourID = srv.uid;
   });
   socket.on('users', users => {
     $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span></div>`);

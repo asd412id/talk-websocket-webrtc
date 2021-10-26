@@ -2,11 +2,18 @@ var express = require('express');
 var http = require('http');
 var path = require('path');
 var app = express();
+var ExpressPeerServer = require('peer').ExpressPeerServer;
 const socketIo = require('socket.io');
 
 var server = http.createServer(app);
 
-app.use(express.static(path.join(__dirname, 'public')));
+var options = {
+  debug: true
+}
+
+const peerServer = ExpressPeerServer(server, options);
+
+app.use(express.static(path.join(__dirname, 'public')), peerServer);
 server.listen();
 
 const io = socketIo(server);
@@ -15,7 +22,15 @@ var users = [];
 var caller = [];
 
 io.on('connection', (socket) => {
-  socket.emit('yourID', socket.id);
+  var srv = {};
+  srv.config = {
+    iceServers: [
+      { urls: 'stun:st.webteknoid.com:5349' },
+      { urls: 'turn:st.webteknoid.com:5349', username: 'asd412id', credential: 'password' }
+    ]
+  };
+  srv.uid = socket.id;
+  socket.emit('yourID', srv);
 
   socket.on('disconnect', () => {
     users.forEach((v, i) => {
@@ -23,13 +38,10 @@ io.on('connection', (socket) => {
         users.splice(i, 1);
       }
     });
-    socket.broadcast.emit('users', users);
   });
 
   socket.on('regdata', data => {
     users.push(data);
-    socket.broadcast.emit('users', users);
-    socket.emit('users', users);
   });
 
   socket.on('call', id => {
@@ -43,5 +55,15 @@ io.on('connection', (socket) => {
       }
     });
     socket.broadcast.emit('caller', caller);
+  });
+
+  peerServer.on('connection', client => {
+    console.log('Connected:' + client.id);
+    socket.broadcast.emit('users', users);
+    socket.emit('users', users);
+  });
+  peerServer.on('disconnect', client => {
+    socket.broadcast.emit('users', users);
+    console.log('Disconnected: ' + client.id);
   });
 });
