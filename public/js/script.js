@@ -17,6 +17,11 @@ var talking = false;
 var peer = null;
 var streamDest = [];
 var calls = [];
+const context = new AudioContext();
+const analyserNode = new AnalyserNode(context, { fftsize: 256 });
+const connecting = new Audio('tone/connecting.ogg');
+connecting.loop = true;
+connecting.duration = 0;
 const modal = `
 <div class="modal fade" role="dialog" data-backdrop="static" aria-hidden="true" id="modal-login">
   <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
@@ -62,12 +67,15 @@ function populateUsers() {
 
 async function sendStream() {
   if (calls.length > 0) {
+    connecting.pause();
+    connecting.duration = 0;
     talking = false;
     calls.forEach(v => {
       v.close();
     });
   }
   if (streamDest.length > 0) {
+    connecting.play();
     talking = true;
     const stream = await getMedia();
     streamDest.forEach(v => {
@@ -121,7 +129,6 @@ function btnClick(btn) {
 }
 
 $("#status").html(`<div class="p-1 bg-danger text-center">OFFLINE</div>`);
-
 const startApp = () => {
   socket.on('connect', () => {
     $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE</div>`);
@@ -142,10 +149,20 @@ const startApp = () => {
     peer.on('call', call => {
       call.answer();
       call.on('stream', (remoteStream) => {
-        socket.emit('answered', { from: call.peer, to: yourID });
         const audio = new Audio();
         audio.srcObject = remoteStream;
         audio.autoplay = true;
+        context.createMediaStreamSource(remoteStream)
+          .connect(analyserNode);
+        var checkInt = setInterval(() => {
+          const bufferLength = analyserNode.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+          analyserNode.getByteFrequencyData(dataArray);
+          if (dataArray[0] > 0) {
+            socket.emit('answered', { from: call.peer, to: yourID });
+            clearInterval(checkInt);
+          }
+        }, 150);
       });
     });
     socket.emit('regdata', { id: srv.uid, name: yourName });
@@ -174,6 +191,8 @@ const startApp = () => {
   });
   socket.on('answered', data => {
     if (data.from == yourID) {
+      connecting.pause();
+      connecting.duration = 0;
       $("#" + data.to).prop('disabled', false);
       $("#" + data.to).addClass('btn-danger');
     }
