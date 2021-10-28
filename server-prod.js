@@ -18,8 +18,9 @@ server.listen();
 
 const io = socketIo(server);
 
-var users = [];
+var users = {};
 var caller = [];
+var channel = {};
 
 io.on('connection', (socket) => {
   var srv = {};
@@ -33,23 +34,29 @@ io.on('connection', (socket) => {
   socket.emit('yourID', srv);
 
   socket.on('disconnect', () => {
-    users.forEach((v, i) => {
+    users[channel[socket.id]].forEach((v, i) => {
       if (v.id == socket.id) {
-        users.splice(i, 1);
+        users[channel[socket.id]].splice(i, 1);
       }
     });
+    socket.to(channel[socket.id]).emit('users', users[channel[socket.id]]);
   });
 
   socket.on('regdata', data => {
-    users.push(data);
+    socket.join(data.channel);
+    channel[socket.id] = data.channel;
+    if (!(data.channel in users)) {
+      users[data.channel] = [];
+    }
+    users[data.channel].push(data);
   });
 
   socket.on('call', id => {
     caller.push(id)
-    socket.broadcast.emit('caller', caller);
+    socket.to(channel[socket.id]).emit('caller', caller);
   });
   socket.on('answered', data => {
-    socket.broadcast.emit('answered', data);
+    socket.to(channel[socket.id]).emit('answered', data);
   });
   socket.on('end', id => {
     caller.forEach((v, i) => {
@@ -57,16 +64,14 @@ io.on('connection', (socket) => {
         caller.splice(i, 1);
       }
     });
-    socket.broadcast.emit('caller', caller);
+    socket.to(channel[socket.id]).emit('caller', caller);
   });
 
   peerServer.on('connection', client => {
-    console.log('Connected:' + client.id);
-    socket.broadcast.emit('users', users);
-    socket.emit('users', users);
+    socket.to(channel[socket.id]).emit('users', users[channel[socket.id]]);
+    socket.emit('users', users[channel[socket.id]]);
   });
   peerServer.on('disconnect', client => {
-    socket.broadcast.emit('users', users);
-    console.log('Disconnected: ' + client.id);
+    socket.to(channel[socket.id]).emit('users', users[channel[socket.id]]);
   });
 });

@@ -12,6 +12,7 @@ const params = Object.fromEntries(urlSearchParams.entries());
 var socket;
 var yourID = null;
 var yourName = params.name;
+var yourChannel = params.channel;
 var listUser = [];
 var talking = false;
 var peer = null;
@@ -27,16 +28,19 @@ const modal = `
   <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title text-center">Masukkan Nama Anda</h5>
+        <h5 class="modal-title text-center">Masukkan Informasi Login</h5>
       </div>
-      <form class="form" id="form-name">
+      <form class="form" id="form-login">
       <div class="modal-body">
         <div class="form-group">
-          <input type="text" id="name" class="form-control">
+          <input type="text" id="name" class="form-control" placeholder="Nama Anda">
         </div>
-      </div>
-      <div class="modal-footer text-center">
-        <button type="submit" class="btn btn-primary bg-olive">LOGIN</button>
+        <div class="form-group">
+          <input type="text" id="channel" class="form-control" placeholder="Nama Channel/Grup">
+        </div>
+        <div class="form-group text-center">
+          <button type="submit" class="btn btn-primary bg-olive">LOGIN</button>
+        </div>
       </div>
       </form>
     </div>
@@ -97,10 +101,11 @@ function allCall(btn) {
     const _user = $(this)
     if (!status == true) {
       streamDest.push(_user.data('id'));
-      _user.prop('disabled', true);
+      _user.addClass('bg-secondary');
       socket.emit('call', { from: yourID, to: _user.data('id') });
     } else {
       streamDest.splice(streamDest.indexOf(_user.data('id')), 1);
+      _user.removeClass('bg-secondary');
       _user.removeClass('btn-danger');
       socket.emit('end', { from: yourID, to: _user.data('id') });
     }
@@ -116,10 +121,11 @@ function btnClick(btn) {
   _btn.data('active', !status);
   if (!status == true) {
     streamDest.push(_btn.data('id'));
-    _btn.prop('disabled', true);
+    _btn.addClass('bg-secondary');
     socket.emit('call', { from: yourID, to: _btn.data('id') });
   } else {
     streamDest.splice(streamDest.indexOf(_btn.data('id')), 1);
+    _btn.removeClass('bg-secondary');
     _btn.removeClass('btn-danger');
     socket.emit('end', { from: yourID, to: _btn.data('id') });
   }
@@ -165,11 +171,12 @@ const startApp = () => {
         }, 150);
       });
     });
-    socket.emit('regdata', { id: srv.uid, name: yourName });
+    socket.emit('regdata', { id: srv.uid, name: yourName, channel: yourChannel });
     yourID = srv.uid;
   });
   socket.on('users', users => {
-    $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span></div>`);
+    $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span>&nbsp;<span class="badge bg-maroon" style="font-size: 1em">` + yourChannel + ` (` + users.length + `)</span></div>`);
+    $("#all").prop('disabled', true);
     if (users.length > 1) {
       $("#all").prop('disabled', false);
     }
@@ -193,25 +200,43 @@ const startApp = () => {
     if (data.from == yourID) {
       connecting.pause();
       connecting.duration = 0;
-      $("#" + data.to).prop('disabled', false);
+      $("#" + data.to).removeClass('bg-secondary');
       $("#" + data.to).addClass('btn-danger');
     }
   });
 }
 
-if (yourName == '' || yourName == undefined || yourName == null) {
+if (yourName == '' || yourName == undefined || yourName == null || yourChannel == '' || yourChannel == undefined || yourChannel == null) {
   $("body").append(modal);
+  $("#name").val(yourName);
+  $("#channel").val(yourChannel);
+  $("#modal-login").on("shown.bs.modal", function () {
+    $("#modal-login").find("input:text").each(function () {
+      if ($(this).val() == '') {
+        $(this).focus();
+        return false;
+      }
+    });
+  });
   $("#modal-login").modal("show");
-  $("#form-name").off().submit(async function (e) {
+  $("#form-login").off().submit(async function (e) {
     e.preventDefault();
-    if ($("#name").val() != '') {
+    if ($("#name").val() != '' && $("#channel").val() != '') {
       yourName = $("#name").val();
       yourName = yourName.replace(/<(.|\n)*?>/g, '').trim()
+      yourChannel = $("#channel").val();
+      yourChannel = yourChannel.replace(/<(.|\n)*?>/g, '').trim()
       $("#modal-login").modal("hide");
       socket = await io();
       startApp();
     } else {
-      alert('Anda harus memasukkan nama!');
+      alert('Anda harus memasukkan nama Anda serta nama channel/grup!');
+      $("#modal-login").find("input:text").each(function () {
+        if ($(this).val() == '') {
+          $(this).focus();
+          return false;
+        }
+      });
     }
   });
 } else {
