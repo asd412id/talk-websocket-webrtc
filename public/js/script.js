@@ -150,6 +150,7 @@ const startApp = () => {
     peer = await new Peer(srv.uid, {
       host: window.location.hostname,
       port: window.location.port,
+      path: '/peerjs',
       config: srv.config
     });
     peer.on('call', call => {

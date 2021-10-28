@@ -13,7 +13,8 @@ var options = {
 
 const peerServer = ExpressPeerServer(server, options);
 
-app.use(express.static(path.join(__dirname, 'public')), peerServer);
+app.use('/peerjs', peerServer);
+app.use(express.static(path.join(__dirname, 'public')));
 server.listen();
 
 const io = socketIo(server);
