@@ -36,12 +36,17 @@ io.on('connection', (socket) => {
   socket.emit('yourID', srv);
 
   socket.on('disconnect', () => {
+    const chn = channel[socket.id];
     users[channel[socket.id]].forEach((v, i) => {
       if (v.id == socket.id) {
         users[channel[socket.id]].splice(i, 1);
+        if (users[channel[socket.id]].length == 0) {
+          delete users[channel[socket.id]];
+        }
+        delete channel[socket.id];
       }
     });
-    socket.to(channel[socket.id]).emit('users', users[channel[socket.id]]);
+    socket.to(chn).emit('users', users[chn]);
   });
 
   socket.on('regdata', data => {
@@ -69,11 +74,8 @@ io.on('connection', (socket) => {
     socket.to(channel[socket.id]).emit('caller', caller);
   });
 
-  peerServer.on('connection', client => {
+  peerServer.on('connection', () => {
     socket.to(channel[socket.id]).emit('users', users[channel[socket.id]]);
     socket.emit('users', users[channel[socket.id]]);
-  });
-  peerServer.on('disconnect', client => {
-    socket.to(channel[socket.id]).emit('users', users[channel[socket.id]]);
   });
 });
