@@ -25,6 +25,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 server.listen(3000);
 
 const io = socketIo(server);
+io.eio.pingTimeout = 3000;
+io.eio.pingInterval = 1000;
 
 var users = {};
 var caller = [];

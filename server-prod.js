@@ -13,11 +13,13 @@ var options = {
 
 const peerServer = ExpressPeerServer(server, options);
 
-app.use('/peerjs', peerServer);
+app.use('/peerserver', peerServer);
 app.use(express.static(path.join(__dirname, 'public')));
 server.listen();
 
 const io = socketIo(server);
+io.eio.pingTimeout = 3000;
+io.eio.pingInterval = 1000;
 
 var users = {};
 var caller = [];

@@ -134,10 +134,10 @@ function btnClick(btn) {
   populateUsers();
 }
 
-$("#status").html(`<div class="p-1 bg-danger text-center">OFFLINE</div>`);
+$("#status").html(`<div class="p-1 bg-danger text-center">SILAHKAN LOGIN</div>`);
 const startApp = () => {
   socket.on('connect', () => {
-    $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE</div>`);
+    $("#status").html(`<div class="p-1 bg-purple text-center">MENYAMBUNGKAN</div>`);
   });
   socket.on('disconnect', () => {
     peer = null;
@@ -150,7 +150,7 @@ const startApp = () => {
     peer = await new Peer(srv.uid, {
       host: window.location.hostname,
       port: window.location.port,
-      path: '/peerjs',
+      path: '/peerserver',
       config: srv.config
     });
     peer.on('call', call => {
@@ -165,7 +165,7 @@ const startApp = () => {
           const bufferLength = analyserNode.frequencyBinCount;
           const dataArray = new Uint8Array(bufferLength);
           analyserNode.getByteFrequencyData(dataArray);
-          if (dataArray[0] > 0) {
+          if (dataArray.some(el => el > 0)) {
             socket.emit('answered', { from: call.peer, to: yourID });
             clearInterval(checkInt);
           }
@@ -228,6 +228,7 @@ if (yourName == '' || yourName == undefined || yourName == null || yourChannel =
       yourChannel = $("#channel").val();
       yourChannel = yourChannel.replace(/<(.|\n)*?>/g, '').trim()
       $("#modal-login").modal("hide");
+      $("#status").html(`<div class="p-1 bg-purple text-center">MENYAMBUNGKAN</div>`);
       socket = await io();
       startApp();
     } else {
