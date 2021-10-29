@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 server.listen(3000);
 
 const io = socketIo(server);
-io.eio.pingTimeout = 3000;
+io.eio.pingTimeout = 5000;
 io.eio.pingInterval = 1000;
 
 var users = {};
@@ -34,7 +34,7 @@ var channel = {};
 
 io.on('connection', (socket) => {
   var srv = {};
-  srv.config = null;
+  srv.config = {};
   srv.uid = socket.id;
   socket.emit('yourID', srv);
 
@@ -59,6 +59,8 @@ io.on('connection', (socket) => {
       users[data.channel] = [];
     }
     users[data.channel].push(data);
+    socket.to(channel[socket.id]).emit('users', users[channel[socket.id]]);
+    socket.emit('users', users[channel[socket.id]]);
   });
 
   socket.on('call', id => {
@@ -75,10 +77,5 @@ io.on('connection', (socket) => {
       }
     });
     socket.to(channel[socket.id]).emit('caller', caller);
-  });
-
-  peerServer.on('connection', () => {
-    socket.to(channel[socket.id]).emit('users', users[channel[socket.id]]);
-    socket.emit('users', users[channel[socket.id]]);
   });
 });

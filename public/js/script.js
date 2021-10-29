@@ -229,7 +229,7 @@ if (yourName == '' || yourName == undefined || yourName == null || yourChannel =
       yourChannel = yourChannel.replace(/<(.|\n)*?>/g, '').trim()
       $("#modal-login").modal("hide");
       $("#status").html(`<div class="p-1 bg-purple text-center">MENYAMBUNGKAN</div>`);
-      socket = await io();
+      socket = io('/');
       startApp();
     } else {
       alert('Anda harus memasukkan nama Anda serta nama channel/grup!');
@@ -242,6 +242,6 @@ if (yourName == '' || yourName == undefined || yourName == null || yourChannel =
     }
   });
 } else {
-  socket = io();
+  socket = io('/');
   startApp();
 }
