@@ -17,11 +17,16 @@ var listUser = [];
 var talking = false;
 var peer = null;
 var streamDest = [];
-var calls = [];
+var calls = {};
 const context = new AudioContext();
 const analyserNode = new AnalyserNode(context, { fftsize: 256 });
-const connecting = new Audio('tone/connecting.ogg');
-connecting.loop = true;
+var connecting = new Audio('tone/connecting.ogg');
+connecting = Object.assign(connecting, {
+  volume: 0.1,
+  loop: true
+});
+connecting.play();
+connecting.pause();
 connecting.duration = 0;
 const modal = `
 <div class="modal fade" role="dialog" data-backdrop="static" aria-hidden="true" id="modal-login">
@@ -70,21 +75,24 @@ function populateUsers() {
 }
 
 async function sendStream() {
-  if (calls.length > 0) {
+  if (Object.keys(calls).length > 0) {
+    talking = false;
     connecting.pause();
     connecting.duration = 0;
-    talking = false;
-    calls.forEach(v => {
-      v.close();
+    Object.keys(calls).forEach(v => {
+      try {
+        calls[v].close();
+      } catch (error) {
+        console.log(error);
+        delete calls[v];
+      }
     });
   }
   if (streamDest.length > 0) {
-    connecting.play();
     talking = true;
-    const stream = await getMedia();
+    connecting.play();
     streamDest.forEach(v => {
-      const call = peer.call(v, stream);
-      calls.push(call);
+      calls[v] = peer.call(v, connecting.captureStream());
     });
   }
 }
@@ -98,18 +106,7 @@ function allCall(btn) {
     _btn.addClass('bg-maroon');
   }
   $(".user").each(function () {
-    const _user = $(this)
-    if (!status == true) {
-      streamDest.push(_user.data('id'));
-      _user.addClass('bg-secondary');
-      socket.emit('call', { from: yourID, to: _user.data('id') });
-    } else {
-      streamDest.splice(streamDest.indexOf(_user.data('id')), 1);
-      _user.removeClass('bg-secondary');
-      _user.removeClass('btn-danger');
-      socket.emit('end', { from: yourID, to: _user.data('id') });
-    }
-    _user.blur();
+    btnClick($(this));
   });
   sendStream();
   populateUsers();
@@ -198,10 +195,13 @@ const startApp = async () => {
       }
     });
   });
-  socket.on('answered', data => {
+  socket.on('answered', async (data) => {
     if (data.from == yourID) {
       connecting.pause();
       connecting.duration = 0;
+      const mmedia = await getMedia();
+      const mstream = mmedia.getAudioTracks()[0];
+      calls[data.to].peerConnection.getSenders()[0].replaceTrack(mstream);
       $("#" + data.to).removeClass('bg-secondary');
       $("#" + data.to).addClass('btn-danger');
     }
