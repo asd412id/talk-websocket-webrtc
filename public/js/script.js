@@ -177,7 +177,7 @@ const startApp = async () => {
     yourID = srv.uid;
   });
   socket.on('users', users => {
-    $("#status").html(`<div class="p-1 bg-olive text-center">ONLINE: <span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span>&nbsp;<span class="badge bg-maroon" style="font-size: 1em">` + yourChannel + ` (` + users.length + `)</span></div>`);
+    $("#status").html(`<div class="p-1 bg-olive text-center"><span class="badge badge-warning" style="font-size: 1em">` + yourName + `</span>&nbsp;<span class="badge bg-maroon" style="font-size: 1em">` + yourChannel + ` (` + users.length + `)</span></div>`);
     $("#all").prop('disabled', true);
     if (users.length > 1) {
       $("#all").prop('disabled', false);
