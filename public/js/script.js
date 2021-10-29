@@ -21,13 +21,8 @@ var calls = {};
 const context = new AudioContext();
 const analyserNode = new AnalyserNode(context, { fftsize: 256 });
 var connecting = new Audio('tone/connecting.ogg');
-connecting = Object.assign(connecting, {
-  volume: 0.1,
-  loop: true
-});
 connecting.play();
 connecting.pause();
-connecting.duration = 0;
 const modal = `
 <div class="modal fade" role="dialog" data-backdrop="static" aria-hidden="true" id="modal-login">
   <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
@@ -90,6 +85,7 @@ async function sendStream() {
   }
   if (streamDest.length > 0) {
     talking = true;
+    connecting.volume = 0.01;
     connecting.play();
     streamDest.forEach(v => {
       calls[v] = peer.call(v, connecting.captureStream());
@@ -154,17 +150,21 @@ const startApp = async () => {
     peer.on('call', call => {
       call.answer();
       call.on('stream', (remoteStream) => {
-        const audio = new Audio();
+        var audio = new Audio();
         audio.srcObject = remoteStream;
-        audio.autoplay = true;
+        audio.volume = 0;
+        audio.play();
         context.createMediaStreamSource(remoteStream)
           .connect(analyserNode);
-        var checkInt = setInterval(() => {
+        var checkInt = setInterval(async () => {
           const bufferLength = analyserNode.frequencyBinCount;
           const dataArray = new Uint8Array(bufferLength);
           analyserNode.getByteFrequencyData(dataArray);
           if (dataArray.some(el => el > 0)) {
-            socket.emit('answered', { from: call.peer, to: yourID });
+            await socket.emit('answered', { from: call.peer, to: yourID });
+            setTimeout(() => {
+              audio.volume = 1;
+            }, 755);
             clearInterval(checkInt);
           }
         }, 150);
