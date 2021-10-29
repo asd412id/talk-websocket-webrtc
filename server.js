@@ -9,18 +9,18 @@ const socketIo = require('socket.io');
 var privateKey = fs.readFileSync(path.join(__dirname, 'ssl', 'server.key'));
 var certificate = fs.readFileSync(path.join(__dirname, 'ssl', 'server.crt'));
 
-var options = {
-  debug: true
-}
-
 var server = https.createServer({
   key: privateKey,
   cert: certificate
 }, app);
 
+var options = {
+  debug: true,
+  path: '/connect'
+}
 const peerServer = ExpressPeerServer(server, options);
 
-app.use('/peerjs', peerServer);
+app.use('/peerserver', peerServer);
 app.use(express.static(path.join(__dirname, 'public')));
 server.listen(3000);
 

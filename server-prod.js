@@ -8,9 +8,9 @@ const socketIo = require('socket.io');
 var server = http.createServer(app);
 
 var options = {
-  debug: true
+  debug: true,
+  path: '/connect'
 }
-
 const peerServer = ExpressPeerServer(server, options);
 
 app.use('/peerserver', peerServer);

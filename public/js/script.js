@@ -135,7 +135,8 @@ function btnClick(btn) {
 }
 
 $("#status").html(`<div class="p-1 bg-danger text-center">SILAHKAN LOGIN</div>`);
-const startApp = () => {
+const startApp = async () => {
+  socket = await io();
   socket.on('connect', () => {
     $("#status").html(`<div class="p-1 bg-purple text-center">MENYAMBUNGKAN</div>`);
   });
@@ -150,7 +151,7 @@ const startApp = () => {
     peer = await new Peer(srv.uid, {
       host: window.location.hostname,
       port: window.location.port,
-      path: '/peerserver',
+      path: '/peerserver/connect',
       config: srv.config
     });
     peer.on('call', call => {
@@ -229,7 +230,6 @@ if (yourName == '' || yourName == undefined || yourName == null || yourChannel =
       yourChannel = yourChannel.replace(/<(.|\n)*?>/g, '').trim()
       $("#modal-login").modal("hide");
       $("#status").html(`<div class="p-1 bg-purple text-center">MENYAMBUNGKAN</div>`);
-      socket = io('/');
       startApp();
     } else {
       alert('Anda harus memasukkan nama Anda serta nama channel/grup!');
@@ -242,6 +242,5 @@ if (yourName == '' || yourName == undefined || yourName == null || yourChannel =
     }
   });
 } else {
-  socket = io('/');
   startApp();
 }
