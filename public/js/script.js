@@ -18,9 +18,6 @@ var talking = false;
 var peer = null;
 var streamDest = [];
 var calls = {};
-var AudioContext = window.AudioContext || window.webkitAudioContext;
-const context = new AudioContext();
-const analyserNode = new AnalyserNode(context, { fftsize: 256 });
 var connecting = new Audio('tone/connecting.ogg');
 const modal = `
 <div class="modal fade" role="dialog" data-backdrop="static" aria-hidden="true" id="modal-login">
@@ -148,7 +145,10 @@ const startApp = async () => {
     });
     peer.on('call', call => {
       call.answer();
-      call.on('stream', (remoteStream) => {
+      call.on('stream', async (remoteStream) => {
+        const AudioContext = await (window.AudioContext || window.webkitAudioContext);
+        const context = await new AudioContext();
+        const analyserNode = new AnalyserNode(context, { fftsize: 256 });
         var audio = new Audio();
         audio.srcObject = remoteStream;
         audio.volume = 0;
