@@ -176,11 +176,6 @@ const startApp = async () => {
           analyserNode.getByteFrequencyData(dataArray);
           if (dataArray.some(el => el > 0)) {
             await socket.emit('answered', { from: call.peer, to: yourID });
-            $("#" + call.peer).off().click(function () {
-              if ($(this).hasClass("bg-warning")) {
-                call.close();
-              }
-            });
             setTimeout(() => {
               audio.volume = 1;
             }, 755);

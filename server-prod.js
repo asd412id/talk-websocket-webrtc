@@ -29,7 +29,7 @@ io.on('connection', (socket) => {
   var srv = {};
   srv.config = {
     iceServers: [
-      { urls: 'stun:st.webteknoid.com:5349' },
+      { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'turn:st.webteknoid.com:5349', username: 'asd412id', credential: 'password' }
     ]
   };
