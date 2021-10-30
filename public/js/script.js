@@ -92,13 +92,11 @@ async function sendStream() {
     connecting.play();
     streamDest.forEach(async (v) => {
       calls[v] = await peer.call(v, connecting.captureStream());
-      if (autoAnswer == 1) {
-        calls[v].on('stream', (remoteStream) => {
-          var audio = new Audio();
-          audio.srcObject = remoteStream;
-          audio.play();
-        });
-      }
+      calls[v].on('stream', (remoteStream) => {
+        var audio = new Audio();
+        audio.srcObject = remoteStream;
+        audio.play();
+      });
     });
   }
 }
@@ -154,6 +152,7 @@ const startApp = async () => {
     peer = await new Peer(srv.uid, {
       host: window.location.hostname,
       port: window.location.port,
+      iceTransportPolicy: 'relay',
       path: '/peerserver/connect',
       config: srv.config
     });
