@@ -21,8 +21,6 @@ var calls = {};
 const context = new AudioContext();
 const analyserNode = new AnalyserNode(context, { fftsize: 256 });
 var connecting = new Audio('tone/connecting.ogg');
-connecting.play();
-connecting.pause();
 const modal = `
 <div class="modal fade" role="dialog" data-backdrop="static" aria-hidden="true" id="modal-login">
   <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
