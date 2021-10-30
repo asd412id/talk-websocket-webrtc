@@ -18,6 +18,7 @@ var talking = false;
 var peer = null;
 var streamDest = [];
 var calls = {};
+var AudioContext = window.AudioContext || window.webkitAudioContext;
 const context = new AudioContext();
 const analyserNode = new AnalyserNode(context, { fftsize: 256 });
 var connecting = new Audio('tone/connecting.ogg');
