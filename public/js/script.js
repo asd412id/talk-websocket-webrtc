@@ -13,6 +13,7 @@ var socket;
 var yourID = null;
 var yourName = params.name;
 var yourChannel = params.channel;
+var autoAnswer = params.answer;
 var listUser = [];
 var talking = false;
 var peer = null;
@@ -33,6 +34,12 @@ const modal = `
         </div>
         <div class="form-group">
           <input type="text" id="channel" class="form-control" placeholder="Nama Channel/Grup">
+        </div>
+        <div class="form-group">
+          <select id="autoanswer" class="form-control">
+            <option value="0">Jawab Manual</option>
+            <option value="1">Jawab Otomatis</option>
+          </select>
         </div>
         <div class="form-group text-center">
           <button type="submit" class="btn btn-primary bg-olive">LOGIN</button>
@@ -70,9 +77,9 @@ async function sendStream() {
     talking = false;
     connecting.pause();
     connecting.duration = 0;
-    Object.keys(calls).forEach(v => {
+    Object.keys(calls).forEach(async (v) => {
       try {
-        calls[v].close();
+        await calls[v].close();
       } catch (error) {
         console.log(error);
         delete calls[v];
@@ -83,8 +90,15 @@ async function sendStream() {
     talking = true;
     connecting.volume = 0.01;
     connecting.play();
-    streamDest.forEach(v => {
-      calls[v] = peer.call(v, connecting.captureStream());
+    streamDest.forEach(async (v) => {
+      calls[v] = await peer.call(v, connecting.captureStream());
+      if (autoAnswer == 1) {
+        calls[v].on('stream', (remoteStream) => {
+          var audio = new Audio();
+          audio.srcObject = remoteStream;
+          audio.play();
+        });
+      }
     });
   }
 }
@@ -143,8 +157,9 @@ const startApp = async () => {
       path: '/peerserver/connect',
       config: srv.config
     });
-    peer.on('call', call => {
-      call.answer();
+    peer.on('call', async (call) => {
+      var voice = autoAnswer == 1 ? await getMedia() : null;
+      call.answer(voice);
       call.on('stream', async (remoteStream) => {
         const AudioContext = await (window.AudioContext || window.webkitAudioContext);
         const context = await new AudioContext();
@@ -161,6 +176,11 @@ const startApp = async () => {
           analyserNode.getByteFrequencyData(dataArray);
           if (dataArray.some(el => el > 0)) {
             await socket.emit('answered', { from: call.peer, to: yourID });
+            $("#" + call.peer).off().click(function () {
+              if ($(this).hasClass("bg-warning")) {
+                call.close();
+              }
+            });
             setTimeout(() => {
               audio.volume = 1;
             }, 755);
@@ -227,6 +247,7 @@ if (yourName == '' || yourName == undefined || yourName == null || yourChannel =
       yourName = yourName.replace(/<(.|\n)*?>/g, '').trim()
       yourChannel = $("#channel").val();
       yourChannel = yourChannel.replace(/<(.|\n)*?>/g, '').trim()
+      autoAnswer = $("#autoanswer").val();
       $("#modal-login").modal("hide");
       $("#status").html(`<div class="p-1 bg-purple text-center">MENYAMBUNGKAN</div>`);
       startApp();
